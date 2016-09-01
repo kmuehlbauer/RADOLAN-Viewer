@@ -1,2 +1,2 @@
 # RADOLAN-Viewer
-Basic RADOLAN Viewer using openGL package vispy
+Basic RADOLAN Viewer using `wradlib` (reading RADOLAN data), `vispy` (openGL) and `PyQt` (GUI)

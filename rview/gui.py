@@ -70,7 +70,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def update_view(self):
         print("CMAP:", self.props.combo.currentText())
-        self.canvas.set_colormap(self.props.combo.currentText())
+        #self.canvas.set_colormap(self.props.combo.currentText())
         self.canvas.update()
 
     def reload(self):

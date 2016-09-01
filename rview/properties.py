@@ -71,7 +71,7 @@ class PropertiesWidget(QtGui.QWidget):
         self.hline0.setFrameShadow(QtGui.QFrame.Sunken)
 
         # Start Directory
-        self.dirname = "/automount/radar/dwd/rx/2014/2014-06/2014-06-08/"
+        self.dirname = "/home/k.muehlbauer/ownCloud/data/DWD/RX/2015-05-01/"
         self.dirLabel = LongLabel(self.dirname)
         self.filelist = sorted(glob.glob(os.path.join(self.dirname, "raa01*")))
         self.frames = len(self.filelist)
@@ -221,7 +221,7 @@ class PropertiesWidget(QtGui.QWidget):
             self.dirname = f
             self.filelist = glob.glob(os.path.join(self.dirname, "raa01*"))
             data, meta = utils.read_radolan(self.filelist[0])
-            print("Meta:", meta)
+            #print("Meta:", meta)
             self.data0ComboBox.clear()
             self.data0ComboBox.addItem(meta['producttype'])
             self.data0ComboBox.setCurrentIndex(0)

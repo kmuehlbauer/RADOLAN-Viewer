@@ -127,22 +127,31 @@ _c2l = 'float cmap(vec4 color) { return (color.r + color.g + color.b) / 3.; }'
 #     }
 # """)
 
+
 class ContourFilter(object):
-    def __init__(self, level=2., width=2.0, antialias=1.0, color='black', cmap='cubehelix'):
+    def __init__(self, level=2., width=2.0, antialias=1.0, color='black', cmap='grays'):
         self.fshader = Function("""
             void isoline() {
                 if ($isolevel <= 0 || $isowidth <= 0 || $antialias < 1.0) {
                     return;
                 }
 
-                $antialias;
                 vec4 b = $isocolor;
+
+                //const vec3 w = vec3(0.299, 0.587, 0.114);
+                //const vec3 w = vec3(0.2126, 0.7152, 0.0722);
+                //const vec3 w = vec3(0.333, 0.333, 0.333);
+                //float value = dot(gl_FragColor.rgb, w);
+                //const vec3 w = vec3(1, 1, 1);
+                //float value = dot(gl_FragColor.rgb, w);
 
                 // luminance
                 //float lmod = mod(gl_FragColor.r * $isolevel + 0.5, $isolevel);
                 //float lmod = abs(ceil(gl_FragColor.r * $isolevel) / $isolevel);
                 //float lmod = floor(gl_FragColor.r * $isolevel + 0.5) / $isolevel;
-                float lmod = floor(gl_FragColor.r * $isolevel + 0.15) / $isolevel;
+                //float lmod = floor(gl_FragColor.r * $isolevel + 0.5) / $isolevel;
+                float value = gl_FragColor.r;
+                float lmod = floor(value * $isolevel + 0.5) / $isolevel;
                 vec4 lcol = vec4(lmod, lmod, lmod, 1.0);
 
 
@@ -223,7 +232,7 @@ class RadolanCanvas(scene.SceneCanvas):
         scene.SceneCanvas.__init__(self, keys='interactive')
         self.size = 1400, 1300
         self.unfreeze()
-
+        print(dir(visuals))
         #self.view = self.central_widget.add_view()
         self.grid = self.central_widget.add_grid()
 
@@ -239,27 +248,29 @@ class RadolanCanvas(scene.SceneCanvas):
         img_data = np.zeros((900, 900))
         self.X, self.Y = np.meshgrid(np.arange(img_data.shape[0]),np.arange(img_data.shape[1]))
 
-        #cmap = 'grays'
         cmap = 'grays'
+        cmap = 'cubehelix'
 
         self.image = scene.visuals.Image(img_data, method='impostor', #interpolation='bicubic',
                                          cmap=cmap, parent=self.b1.scene)
 
-        level = 21
-        self.iso = ContourFilter(level=level, width=0.01, color='black', cmap=cmap)
-        self.image.attach(self.iso)
+        level = 11
+        self.iso = ContourFilter(level=level, width=1, color='black')#, cmap=cmap)
+        #self.image.attach(self.iso)
         #bta = BlackToAlpha()
         #self.image.attach(bta)
 
         self.cbar = scene.visuals.ColorBar(center_pos=(0, 900), size=np.array([850, 20]),
                                            cmap=cmap, label_str='measurement units', orientation='right',
                                            border_width=1, border_color='white', parent=self.b1.scene)
-        self.cbar._colorbar.attach(self.iso)
+
+
+        #self.cbar._colorbar.attach(self.iso)
 
         self.cbar.label.color = 'white'
 
         #ticks = [0, 50]
-        #self.cbar.clim = (1,0)
+        #self.cbar.clim = (76,0)
         for tick in self.cbar.ticks:
             tick.color = 'white'
 
@@ -323,6 +334,7 @@ class RadolanCanvas(scene.SceneCanvas):
     def create_cities(self):
         # initialize citie markers
         self.markers = scene.visuals.Markers(parent=self.b1.scene)
+        self.markers.transform = visuals.transforms.STTransform(translate=(0, 0, -10))
         cities = get_cities_coords()
         cnameList = []
         ccoordList = []
@@ -335,14 +347,14 @@ class RadolanCanvas(scene.SceneCanvas):
         #r0 = radolan[0,0]
         pos_scene = np.zeros((ccoord.shape[0], 2), dtype=np.float32)
         pos_scene[:] = ccoord - self.r0
-        self.markers.set_data(pos=pos_scene, symbol="disc", edge_color="blue",
+        self.markers.set_data(pos=pos_scene, symbol="disc", edge_color="blue", face_color='red',
                               size=10)
-        self.text = scene.visuals.Text(text=cnameList, pos=pos_scene, font_size=20,
+        self.text = scene.visuals.Text(text=cnameList, pos=pos_scene, font_size=10,
                                        anchor_x = 'right', anchor_y = 'top', parent=self.b1.scene)
 
     def set_colormap(self, cmap):
-        self.image.cmap = cmap
-        self.cbar.cmap = cmap
+        #self.image.cmap = cmap
+        #self.cbar.cmap = cmap
         #zhcmap = ['#ffffff','#092faa','#174ef8','#27b4f3','#35edee','#33f64b','#25ca39',
         #  '#17a029','#057217','#fef858','#fece4b','#fda540','#fc7a36','#fd2e2e',
         #  '#e12826','#bf1f1d','#9f1713','#fd5bfa','#a675ce','#5e46a3','#421d74']#, '#421d74']
@@ -361,7 +373,8 @@ class RadolanCanvas(scene.SceneCanvas):
 
         #cm2 = Colormap(zhcmap[::-1], controls=lm, interpolation='zero')
         #self.iso.cmap = cm2
-        self.iso.cmap = cmap
+        #self.iso.cmap = cmap
+        pass
 
     def set_data(self, n_levels, cmap):
         #self.iso.set_color(cmap)
